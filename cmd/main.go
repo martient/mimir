@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/taultek/mimir/internal/config"
 )
 
 var rootCmd = &cobra.Command{
@@ -78,27 +79,41 @@ func main() {
 func runServer(cmd *cobra.Command, args []string) {
 	fmt.Println("Starting Mimir Gateway...")
 	fmt.Println("Server would start on HTTP port 8080 and WS port 8081")
-	// Server implementation will be added in later phases
+	fmt.Println("Server implementation will be completed in later phases")
 }
 
 func runStatus(cmd *cobra.Command, args []string) {
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load config: %v\n", err)
+		os.Exit(1)
+	}
+
 	fmt.Println("Mimir Gateway Status:")
-	fmt.Println("  Server: Running")
-	fmt.Println("  HTTP:  http://localhost:8080")
-	fmt.Println("  WS:     ws://localhost:8081")
-	fmt.Println("  opencode: Connected")
-	fmt.Println("  Projects: 2")
-	fmt.Println("  Active Sessions: 0")
+	fmt.Printf("  Config: %s\n", cfg.Database.Path)
+	fmt.Println("  Server: Not running (use 'mimir serve')")
+	fmt.Printf("  Projects: %d registered\n", len(cfg.Projects))
+	fmt.Println("  Active Sessions: N/A (database access not yet implemented in CLI)")
 }
 
 func runProjectsList(cmd *cobra.Command, args []string) {
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load config: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(cfg.Projects) == 0 {
+		fmt.Println("No projects registered.")
+		fmt.Println("Use 'mimir projects add <path>' to register a project.")
+		return
+	}
+
 	fmt.Println("Registered Projects:")
-	fmt.Println("  1. my-api (Go)")
-	fmt.Println("     Path: /path/to/my-api")
-	fmt.Println("     opencode Port: 4096")
-	fmt.Println("  2. my-frontend (TypeScript)")
-	fmt.Println("     Path: /path/to/my-frontend")
-	fmt.Println("     opencode Port: 4097")
+	for i, project := range cfg.Projects {
+		fmt.Printf("  %d. %s\n", i+1, project.Name)
+		fmt.Printf("     Path: %s\n", project.Path)
+	}
 }
 
 func runProjectsAdd(cmd *cobra.Command, args []string) {
@@ -106,10 +121,11 @@ func runProjectsAdd(cmd *cobra.Command, args []string) {
 		fmt.Println("Error: project path is required")
 		return
 	}
+
 	projectPath := args[0]
 	fmt.Printf("Registering project: %s\n", projectPath)
 	fmt.Println("Project will be added to Mimir configuration")
-	// Project registration will be implemented in Phase 2
+	fmt.Println("Project registration will be implemented in Phase 3 (with database integration)")
 }
 
 func runSend(cmd *cobra.Command, args []string) {
@@ -128,5 +144,5 @@ func runSend(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("Sending message to project '%s': %s\n", project, message)
 	fmt.Println("Message will be sent to opencode instance")
-	// Message sending will be implemented in Phase 3
+	fmt.Println("Message sending will be implemented in Phase 3 (with opencode SDK integration)")
 }
