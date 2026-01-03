@@ -1,0 +1,51 @@
+# Mimir Configuration Example
+# Copy this file to ~/.mimir/config.yaml and customize
+
+server:
+  http_port: 8080
+  ws_port: 8081
+
+database:
+  # Path to SQLite database (supports ~ expansion)
+  path: ~/.mimir/mimir.db
+  # Encryption key (prefer runtime-provided via MIMIR_DB_KEY env var)
+  # Never hardcode production keys
+  encryption_key: ${MIMIR_DB_KEY}
+
+opencode:
+  default_model: anthropic/claude-sonnet-4
+  # opencode instances are discovered dynamically via config/projects
+
+projects:
+  # Register your projects here
+  - name: my-api
+    path: /path/to/my-api
+    opencode_port: 4096
+
+  - name: my-frontend
+    path: /path/to/my-frontend
+    opencode_port: 4097
+
+webhooks:
+  sentry:
+    # Sentry webhook secret (generate in Sentry project settings)
+    secret: ${SENTRY_WEBHOOK_SECRET}
+    # Map Sentry projects to Mimir projects
+    projects:
+      - sentry_project: my-api-prod
+        mimir_project: my-api
+      - sentry_project: my-frontend-prod
+        mimir_project: my-frontend
+
+cron:
+  # Scheduled jobs
+  - name: daily-code-review
+    schedule: "0 9 * * *"
+    project: my-api
+    action: review
+    # action can be: review, test, lint, custom
+
+  - name: weekly-docs-update
+    schedule: "0 10 * * 0"
+    project: my-api
+    action: docs

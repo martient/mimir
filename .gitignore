@@ -1,0 +1,52 @@
+# .gitignore for Mimir
+
+# Binaries
+/mimir
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (but keep example)
+~/.mimir/config.yaml
+!.mimir/config.example.yaml
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Encryption keys
+.mimir/key.txt
+.mimir/*.key
+
+# Worktrees (temporary)
+mimir/
+
+# Logs
+*.log
+logs/
