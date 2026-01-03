@@ -7,13 +7,19 @@ import (
 	"time"
 
 	"github.com/taultek/mimir/internal/config"
+	"github.com/taultek/mimir/internal/database"
 	"github.com/taultek/mimir/internal/observability"
+	projectsrepo "github.com/taultek/mimir/internal/projects/repositories"
+	sessionsrepo "github.com/taultek/mimir/internal/sessions/repositories"
 )
 
 // Container holds shared dependencies
 type Container struct {
-	Config *config.Config
-	Logger *observability.Logger
+	Config      *config.Config
+	DB          *database.DB
+	Logger      *observability.Logger
+	SessionRepo *sessionsrepo.SessionRepository
+	ProjectRepo *projectsrepo.ProjectRepository
 }
 
 // NewContainer creates a new dependency container
@@ -24,9 +30,27 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 		return nil, err
 	}
 
+	// Initialize database
+	db, err := database.Init(cfg.Database)
+	if err != nil {
+		return nil, err
+	}
+
+	// Run migrations
+	if err := db.Migrate(); err != nil {
+		return nil, fmt.Errorf("failed to run migrations: %w", err)
+	}
+
+	// Initialize repositories
+	projectRepo := projectsrepo.NewProjectRepository(db)
+	sessionRepo := sessionsrepo.NewSessionRepository(db)
+
 	return &Container{
-		Config: cfg,
-		Logger: logger,
+		Config:      cfg,
+		DB:          db,
+		Logger:      logger,
+		SessionRepo: sessionRepo,
+		ProjectRepo: projectRepo,
 	}, nil
 }
 
